@@ -1,0 +1,96 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  @page { size: A4; margin: 2.5cm 2.2cm; }
+  body { font-family: "Times New Roman", Times, serif; font-size: 12pt; color: #000; line-height: 1.35; }
+  h1 { font-size: 12pt; text-align: center; margin: 0 0 18pt; }
+  .box { border: 1.5px solid #000; padding: 10pt 14pt 12pt; margin-bottom: 18pt; }
+  .box b { display: block; margin-bottom: 6pt; }
+  ol, ul { margin: 0 0 0 18pt; padding: 0; }
+  li { margin-bottom: 3pt; }
+  .lbl { font-weight: bold; margin: 14pt 0 4pt; }
+  a { color: #1155cc; }
+  img { max-width: 100%; border: 1px solid #999; margin: 6pt 0 10pt; }
+  .sub { font-weight: bold; margin-top: 8pt; }
+  .nested { margin: 4pt 0 0 18pt; }
+  code { font-family: "Courier New", monospace; font-size: 11pt; }
+  table { border-collapse: collapse; margin: 6pt 0; font-size: 11pt; }
+  td, th { border: 1px solid #666; padding: 3pt 8pt; text-align: left; }
+</style>
+
+<h1>Laboratorio #3.1:</h1>
+
+<div class="box">
+  <b>Objetivos:</b>
+  <ol>
+    <li>Explicar qué es MCP y qué problema resuelve.</li>
+    <li>Configurar un servidor MCP desde el archivo de configuración (mcp.json, .mcp.json) en distintos asistentes de IA.</li>
+    <li>Verificar que el asistente detecta las herramientas (tools) que expone el servidor.</li>
+    <li>Usar Playwright MCP para que el agente explore un sitio web real: navegar, llenar formularios, capturar el DOM.</li>
+    <li>Generar pruebas E2E a partir de criterios de aceptación, con selectores y mensajes reales extraídos del sitio (no inventados).</li>
+    <li>Ejecutar las pruebas generadas y cerrar el ciclo: criterio → exploración → test → verde.</li>
+  </ol>
+</div>
+
+<div class="lbl">Guía de laboratorio:</div>
+<a href="https://github.com/wils0n/laboratorios-md/blob/main/laboratorio_AI_assistants/laboratorio_2/laboratorio_2.md">https://github.com/wils0n/laboratorios-md/blob/main/laboratorio_AI_assistants/laboratorio_2/laboratorio_2.md</a>
+
+<div class="lbl">Entregables:</div>
+<ol>
+  <li>Url de repositorio:
+    <div class="nested"><a href="https://github.com/Gabrieleeh32159/lab-mcp-playwright">https://github.com/Gabrieleeh32159/lab-mcp-playwright</a></div>
+  </li>
+
+  <li style="margin-top:10pt">Archivos del proyecto de pruebas en el repositorio:
+    <ul class="nested" style="list-style-type: '- '">
+      <li>playwright.config.ts (con baseURL https://practice.expandtesting.com)</li>
+      <li>tests/ con un spec por criterio: login exitoso, username inválido, password inválido, logout</li>
+      <li>package.json con @playwright/test como devDependency</li>
+    </ul>
+  </li>
+
+  <li style="margin-top:10pt">Captura de la configuración del servidor MCP: el archivo de configuración (mcp.json en VS Code, .mcp.json en Claude Code o ~/.copilot/mcp-config.json en Copilot CLI) junto a la verificación de que el asistente lista las tools de playwright (ícono de herramientas en Copilot, /mcp en Claude Code, /mcp show en Copilot CLI).
+    <div class="sub">visual studio code (.vscode/mcp.json):</div>
+    <img src="capturas/03-config-mcp-vscode.png">
+  </li>
+
+  <li style="margin-top:10pt">Captura de la lista de mcps configurado y debe figurar el mcp de playwright:
+    <div class="sub">claude code (claude mcp list):</div>
+    <img src="capturas/04-mcp-list-claude-code.png">
+  </li>
+
+  <li style="margin-top:10pt">Captura del Paso 1 (exploración con Playwright MCP): el agente ejecutando los flujos en el navegador y su reporte con los selectores reales (#username, #password, #submit-login, #flash) y el TEXTO EXACTO de los mensajes de éxito y error observados. Incluir el hallazgo de qué mensaje muestra el sitio realmente con username inválido (¿coincide con la documentación de la página?). <b>(Suficiente con un canal de conexión: Ejm copilot cli)</b>
+    <div class="sub">claude code + playwright mcp:</div>
+    <img src="capturas/05-exploracion-playwright-mcp.png">
+    <div class="sub">navegador controlado por el MCP — login exitoso (/secure):</div>
+    <img src="capturas/05c-navegador-mcp-area-segura.png">
+    <div class="sub">navegador controlado por el MCP — username inválido:</div>
+    <img src="capturas/05b-navegador-mcp-error-username.png">
+
+    <div class="sub">Selectores reales observados:</div>
+    <table>
+      <tr><th>Elemento</th><th>Selector</th></tr>
+      <tr><td>Username</td><td><code>#username</code></td></tr>
+      <tr><td>Password</td><td><code>#password</code></td></tr>
+      <tr><td>Botón Login</td><td><code>#submit-login</code></td></tr>
+      <tr><td>Mensaje flash</td><td><code>#flash</code></td></tr>
+      <tr><td>Logout</td><td><code>a[href="/logout"]</code></td></tr>
+    </table>
+
+    <div class="sub">Texto exacto de los mensajes:</div>
+    <table>
+      <tr><th>Criterio</th><th>URL final</th><th>Texto de #flash</th></tr>
+      <tr><td>Login exitoso</td><td>/secure</td><td>You logged into a secure area!</td></tr>
+      <tr><td>Username inválido</td><td>/login</td><td>Your username is invalid!</td></tr>
+      <tr><td>Password inválido</td><td>/login</td><td>Your password is invalid!</td></tr>
+      <tr><td>Logout</td><td>/login</td><td>You logged out of the secure area!</td></tr>
+    </table>
+
+    <div class="sub">Hallazgo (username inválido):</div>
+    <div>La documentación de la página describe únicamente un “mensaje de error” genérico, pero el sitio devuelve el texto literal <b>“Your username is invalid!”</b>, distinto de “Your password is invalid!” que aparece sólo cuando el username sí existe. Es decir, el sitio distingue ambos casos y no coincide con el mensaje genérico documentado: un test escrito sin explorar habría usado un único mensaje y habría fallado.</div>
+  </li>
+
+  <li style="margin-top:10pt">Captura de la ejecución npx playwright test con los 4 tests en verde (4 passed).
+    <img src="capturas/06-playwright-test-4-passed.png">
+  </li>
+</ol>
